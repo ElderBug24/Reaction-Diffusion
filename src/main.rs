@@ -103,18 +103,18 @@ impl Canvas {
         self.data[(x * self.columns + y) * 2 + z] = val;
     }
 
-    pub fn laplace(&self, x: usize, y: usize, index: usize) -> f64 {
+    pub fn laplace(&self, x: usize, y: usize, z: usize) -> f64 {
         let mut sum = 0.0;
 
-        sum += self.get(x    , y    , index) * -1.0;
-        sum += self.get(x - 1, y    , index) *  0.2;
-        sum += self.get(x + 1, y    , index) *  0.2;
-        sum += self.get(x    , y + 1, index) *  0.2;
-        sum += self.get(x    , y - 1, index) *  0.2;
-        sum += self.get(x - 1, y - 1, index) *  0.05;
-        sum += self.get(x + 1, y - 1, index) *  0.05;
-        sum += self.get(x + 1, y + 1, index) *  0.05;
-        sum += self.get(x - 1, y + 1, index) *  0.05;
+        sum += self.get(x    , y    , z) * -1.0;
+        sum += self.get(x - 1, y    , z) *  0.2;
+        sum += self.get(x + 1, y    , z) *  0.2;
+        sum += self.get(x    , y + 1, z) *  0.2;
+        sum += self.get(x    , y - 1, z) *  0.2;
+        sum += self.get(x - 1, y - 1, z) *  0.05;
+        sum += self.get(x + 1, y - 1, z) *  0.05;
+        sum += self.get(x + 1, y + 1, z) *  0.05;
+        sum += self.get(x - 1, y + 1, z) *  0.05;
 
         return sum;
     }
@@ -145,25 +145,25 @@ __kernel void func(
     double la = 0.0;
     double lb = 0.0;
 
-    la += grid[((x  ) * HEIGHT + (y  )) * 2  ] * -1.0;
-    la += grid[((x-1) * HEIGHT + (y  )) * 2  ] *  0.2;
-    la += grid[((x+1) * HEIGHT + (y  )) * 2  ] *  0.2;
-    la += grid[((x  ) * HEIGHT + (y+1)) * 2  ] *  0.2;
-    la += grid[((x  ) * HEIGHT + (y-1)) * 2  ] *  0.2;
-    la += grid[((x-1) * HEIGHT + (y-1)) * 2  ] *  0.05;
-    la += grid[((x+1) * HEIGHT + (y-1)) * 2  ] *  0.05;
-    la += grid[((x+1) * HEIGHT + (y+1)) * 2  ] *  0.05;
-    la += grid[((x-1) * HEIGHT + (y+1)) * 2  ] *  0.05;
+    la += grid[((x  ) * HEIGHT + (y  )) * 2    ] * -1.0;
+    la += grid[((x-1) * HEIGHT + (y  )) * 2    ] *  0.2;
+    la += grid[((x+1) * HEIGHT + (y  )) * 2    ] *  0.2;
+    la += grid[((x  ) * HEIGHT + (y+1)) * 2    ] *  0.2;
+    la += grid[((x  ) * HEIGHT + (y-1)) * 2    ] *  0.2;
+    la += grid[((x-1) * HEIGHT + (y-1)) * 2    ] *  0.05;
+    la += grid[((x+1) * HEIGHT + (y-1)) * 2    ] *  0.05;
+    la += grid[((x+1) * HEIGHT + (y+1)) * 2    ] *  0.05;
+    la += grid[((x-1) * HEIGHT + (y+1)) * 2    ] *  0.05;
 
-    lb += grid[((x  ) * HEIGHT + (y  )) * 2+1] * -1.0;
-    lb += grid[((x-1) * HEIGHT + (y  )) * 2+1] *  0.2;
-    lb += grid[((x+1) * HEIGHT + (y  )) * 2+1] *  0.2;
-    lb += grid[((x  ) * HEIGHT + (y+1)) * 2+1] *  0.2;
-    lb += grid[((x  ) * HEIGHT + (y-1)) * 2+1] *  0.2;
-    lb += grid[((x-1) * HEIGHT + (y-1)) * 2+1] *  0.05;
-    lb += grid[((x+1) * HEIGHT + (y-1)) * 2+1] *  0.05;
-    lb += grid[((x+1) * HEIGHT + (y+1)) * 2+1] *  0.05;
-    lb += grid[((x-1) * HEIGHT + (y+1)) * 2+1] *  0.05;
+    lb += grid[((x  ) * HEIGHT + (y  )) * 2 + 1] * -1.0;
+    lb += grid[((x-1) * HEIGHT + (y  )) * 2 + 1] *  0.2;
+    lb += grid[((x+1) * HEIGHT + (y  )) * 2 + 1] *  0.2;
+    lb += grid[((x  ) * HEIGHT + (y+1)) * 2 + 1] *  0.2;
+    lb += grid[((x  ) * HEIGHT + (y-1)) * 2 + 1] *  0.2;
+    lb += grid[((x-1) * HEIGHT + (y-1)) * 2 + 1] *  0.05;
+    lb += grid[((x+1) * HEIGHT + (y-1)) * 2 + 1] *  0.05;
+    lb += grid[((x+1) * HEIGHT + (y+1)) * 2 + 1] *  0.05;
+    lb += grid[((x-1) * HEIGHT + (y+1)) * 2 + 1] *  0.05;
 
     double nra =
           DA * la
@@ -220,13 +220,13 @@ async fn main() {
     let mut grid = Canvas::new(WIDTH, HEIGHT);
     let mut next = Canvas::new(WIDTH, HEIGHT);
 
-    let (cx, cy) = (WIDTH/2, HEIGHT/2);
-    for x in (cx-10)..(cx+10) {
-        for y in (cy-2)..(cy+2) {
-            grid.set(x, y, 1, 1.0);
-            next.set(x, y, 1, 1.0);
-        }
-    }
+    // let (cx, cy) = (WIDTH/2, HEIGHT/2);
+    // for x in (cx-10)..(cx+10) {
+    //     for y in (cy-2)..(cy+2) {
+    //         grid.set(x, y, 1, 1.0);
+    //         next.set(x, y, 1, 1.0);
+    //     }
+    // }
 
     buffer_grid.write(&grid.data).enq().unwrap();
     buffer_next.write(&next.data).enq().unwrap();
@@ -300,7 +300,7 @@ async fn main() {
 
             unsafe { kernels[kf_mode].enq().unwrap(); }
 
-            buffer_next.read(&mut next.data).enq().unwrap();
+            buffer_next.read(&mut grid.data).enq().unwrap();
 
             // for y in 1..(HEIGHT-1) {
             //     for x in 1..(WIDTH-1) {
@@ -320,8 +320,8 @@ async fn main() {
             //         next.set(x, y, 1, next_b);
             //     }
             // }
-
-            grid.swap_with(&mut next);
+            //
+            // grid.swap_with(&mut next);
         }
 
         for y in 0..HEIGHT {
