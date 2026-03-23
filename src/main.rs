@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-// use std::time::{Duration, Instant};
+use std::time::{Duration, Instant};
 // use std::thread::sleep;
 
 use macroquad::prelude::*;
@@ -62,17 +62,16 @@ fn window_conf() -> Conf {
         window_height: WINDOW_HEIGHT as i32,
         window_resizable: false,
         high_dpi: false,
-        platform: miniquad::conf::Platform {
-            swap_interval: Some(0),
-            ..Default::default()
-        },
+        // platform: miniquad::conf::Platform {
+        //     swap_interval: Some(0),
+        //     ..Default::default()
+        // },
         ..Default::default()
     };
 }
 
 struct Canvas {
     pub data: Vec<f64>,
-    rows: usize,
     columns: usize
 }
 
@@ -86,7 +85,6 @@ impl Canvas {
 
         return Self {
             data: data,
-            rows: rows,
             columns: columns
         };
     }
@@ -182,8 +180,19 @@ __kernel void func(
 }
 ";
 
+const TUTORIAL_TEXT: &str = "\
+TUTORIAL:
+  [Left Mouse Button] to place reactive
+  [Right Mouse Button] to remove reactive
+  [Middle Mouse Button] to switch reaction settings
+  [Space] to pause / unpause
+";
+
 #[macroquad::main(window_conf)]
 async fn main() {
+    let start_time = Instant::now();
+
+    let tuto_time = Duration::from_secs(10);
     // let frame_duration = Duration::from_secs_f32(1.0 / TARGET_FPS);
 
     // println!("{}", SRC);
@@ -200,7 +209,7 @@ async fn main() {
 
     let kernels: [ocl::Kernel; KF_SETTINGS.len()] = KF_SETTINGS
         .iter()
-        .map(|(F, K)| {
+        .map(|(f, k)| {
             pro_que.kernel_builder("func")
                 .arg(&buffer_grid)
                 .arg(&buffer_next)
@@ -208,8 +217,8 @@ async fn main() {
                 .arg(HEIGHT as u64)
                 .arg(DIFFUSION_A)
                 .arg(DIFFUSION_B)
-                .arg(F)
-                .arg(K)
+                .arg(f)
+                .arg(k)
                 .build()
                 .unwrap()
         })
@@ -220,13 +229,13 @@ async fn main() {
     let mut grid = Canvas::new(WIDTH, HEIGHT);
     let mut next = Canvas::new(WIDTH, HEIGHT);
 
-    // let (cx, cy) = (WIDTH/2, HEIGHT/2);
-    // for x in (cx-10)..(cx+10) {
-    //     for y in (cy-2)..(cy+2) {
-    //         grid.set(x, y, 1, 1.0);
-    //         next.set(x, y, 1, 1.0);
-    //     }
-    // }
+    let (cx, cy) = (WIDTH/2, HEIGHT/2);
+    for x in (cx-10)..(cx+10) {
+        for y in (cy-2)..(cy+2) {
+            grid.set(x, y, 1, 1.0);
+            next.set(x, y, 1, 1.0);
+        }
+    }
 
     buffer_grid.write(&grid.data).enq().unwrap();
     buffer_next.write(&next.data).enq().unwrap();
@@ -373,6 +382,10 @@ async fn main() {
         );
 
         draw_text(&format!("{:.2}", get_fps()), 5.0, 25.0, 35.0, TEXT_COLOR);
+
+        if start_time.elapsed() < tuto_time {
+            draw_multiline_text(TUTORIAL_TEXT, 5.0, 60.0, 35.0, None, TEXT_COLOR);
+        }
 
         next_frame().await;
 
